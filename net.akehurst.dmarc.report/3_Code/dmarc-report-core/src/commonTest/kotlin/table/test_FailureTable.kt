@@ -75,7 +75,7 @@ class test_FailureTable {
     @Test
     fun ip_info() {
         val info = IpInfo("mail-sor-f41.google.com", "Google LLC", "US", "United States")
-        val t = FailureTable.build(listOf(report), ipInfo = mapOf("192.0.2.2" to info))
+        val t = FailureTable.build(listOf(report), ipInfo = mapOf("192.0.2.2" to info), detailed = true)
         assertEquals(listOf("mail-sor-f41.google.com", "", ""), t.column("Source Host"))
         assertEquals(listOf("Google LLC", "", ""), t.column("Owner"))
         assertEquals(listOf("United States", "", ""), t.column("Country"))

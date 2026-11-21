@@ -66,7 +66,6 @@ object FailureTable {
     /** every column, as shown with the detailed option */
     val COLUMNS = listOf(
         "Date",
-        "Source Host",
         "Owner",
         "Country",
         "Count",
@@ -75,6 +74,7 @@ object FailureTable {
         "Reporter",
         "Disposition",
         "Source IP",
+        "Source Host",
         "Envelope From",
         "DKIM",
         "SPF",
@@ -85,7 +85,6 @@ object FailureTable {
     /** the columns that help an ordinary user recognise a message they sent */
     val BASIC_COLUMNS = listOf(
         "Date",
-        "Source Host",
         "Owner",
         "Country",
         "Count",
