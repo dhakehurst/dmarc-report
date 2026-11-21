@@ -67,9 +67,9 @@ object FailureTable {
     val COLUMNS = listOf(
         "Date",
         "Owner",
+        "Envelope To",
         "Country",
         "Header From",
-        "Envelope To",
         "Reporter",
         "Disposition",
         "Source IP",
@@ -86,9 +86,9 @@ object FailureTable {
     val BASIC_COLUMNS = listOf(
         "Date",
         "Owner",
+        "Envelope To",
         "Country",
         "Header From",
-        "Envelope To",
         "Reporter",
         "Disposition"
     )
