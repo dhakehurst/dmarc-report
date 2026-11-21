@@ -2,9 +2,9 @@
 
 Reads a folder of DMARC aggregate reports, as received by email (`.zip`, `.tar.gz`, `.gz` or `.xml`),
 and prints a table of the records where DKIM or SPF failed: one row per record, with the information
-an ordinary sender needs to recognise the message (date, owner and country of the sending server,
+an ordinary sender needs to recognise the message (date, owner of the sending server,
 header from, envelope to, reporter, disposition). `--details` adds the technical columns
-(source IP and host name, message count, envelope from, DKIM and SPF results) needed to work out why it failed.
+(source IP, host name and country, message count, envelope from, DKIM and SPF results) needed to work out why it failed.
 
 ## Install
 

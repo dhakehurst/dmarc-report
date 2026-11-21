@@ -35,12 +35,11 @@ Normative language
 - [REQ-2.4] By default the table SHALL have only the columns that help an ordinary user recognise a message they sent:
   - [REQ-2.4.1] Date: the day (UTC) the report starts,
   - [REQ-2.4.3] Owner: the organisation the sending server's IP is registered to, from RDAP,
-  - [REQ-2.4.4] Country: the country of the sending server's IP from geolocation (ip-api.com), or else the country it is registered in (RDAP),
   - [REQ-2.4.6] Header From and Envelope To,
   - [REQ-2.4.7] Reporter: the organisation that sent the report,
   - [REQ-2.4.8] Disposition: what the receiver did with the messages.
-  - [REQ-2.4.9] The lookups of REQ-2.4.3, REQ-2.4.4 and Source Host (REQ-2.4a) SHALL be made unless asked not to (`--no-lookup`); a failed lookup SHALL leave its cells empty and SHALL NOT stop the application.
-- [REQ-2.4a] When asked to (`--details`), the table SHALL also have the technical columns: Source IP, Source Host (the host name given by reverse DNS of the source IP), Count (the number of messages), Envelope From, the evaluated DKIM and SPF results, each DKIM signature (domain, selector, result) and each SPF check (domain, result).
+  - [REQ-2.4.9] The lookups of REQ-2.4.3 and of Source Host and Country (REQ-2.4a) SHALL be made unless asked not to (`--no-lookup`); a failed lookup SHALL leave its cells empty and SHALL NOT stop the application.
+- [REQ-2.4a] When asked to (`--details`), the table SHALL also have the technical columns: Source IP, Source Host (the host name given by reverse DNS of the source IP), Country (of the source IP from geolocation (ip-api.com), or else the country it is registered in (RDAP); the server's country, not the sender's), Count (the number of messages), Envelope From, the evaluated DKIM and SPF results, each DKIM signature (domain, selector, result) and each SPF check (domain, result).
 - [REQ-2.4b] Rows that are identical in the shown columns SHALL be shown once.
 - [REQ-2.5] Columns that are empty in every row SHALL be left out, to keep the table narrow.
 - [REQ-2.6] When there are two or more rows, a column with the same value in every row SHALL be taken out of the table and printed once above it, as `<column>: <value> (all rows)`.
