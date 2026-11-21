@@ -18,6 +18,7 @@ package net.akehurst.dmarc.report.core.table
 
 import net.akehurst.dmarc.report.core.LoadedReport
 import net.akehurst.dmarc.report.core.api.Record
+import net.akehurst.dmarc.report.core.net.IpInfo
 import kotlin.time.Instant
 
 /**
@@ -25,14 +26,31 @@ import kotlin.time.Instant
  */
 data class Table(
     val columns: List<String>,
-    val rows: List<List<String>>
+    val rows: List<List<String>>,
+    /** columns taken out of the table because every row has the same value, as column name to value */
+    val common: List<Pair<String, String>> = emptyList()
 ) {
+    /**
+     * this table with every column that has the same value in all rows moved to [common].
+     * Nothing is moved when there are fewer than two rows.
+     */
+    fun withCommonColumnsMoved(): Table {
+        if (rows.size < 2) return this
+        val constant = columns.indices.filter { c -> rows.all { rows[0][c] == it[c] } }
+        val keep = columns.indices - constant.toSet()
+        return Table(
+            keep.map { columns[it] },
+            rows.map { row -> keep.map { row[it] } },
+            common + constant.map { columns[it] to rows[0][it] }
+        )
+    }
+
     /**
      * this table without the columns that are empty in every row, to keep it narrow
      */
     fun withoutEmptyColumns(): Table {
         val keep = columns.indices.filter { c -> rows.any { it[c].isNotEmpty() } }
-        return Table(keep.map { columns[it] }, rows.map { row -> keep.map { row[it] } })
+        return Table(keep.map { columns[it] }, rows.map { row -> keep.map { row[it] } }, common)
     }
 }
 
@@ -47,16 +65,18 @@ object FailureTable {
 
     val COLUMNS = listOf(
         "Reporter",
-        "From (UTC)",
-        "To (UTC)",
+        "Date",
         "Source IP",
         "Source Host",
+        "Owner",
+        "Country",
+        "Location",
         "Count",
         "Header From",
         "Envelope From",
         "Envelope To",
-        "DMARC DKIM",
-        "DMARC SPF",
+        "DKIM",
+        "SPF",
         "DKIM checks",
         "SPF checks",
         "Disposition"
@@ -67,16 +87,18 @@ object FailureTable {
      */
     val DESCRIPTIONS = mapOf(
         "Reporter" to "the mail provider that received the messages and sent the report",
-        "From (UTC)" to "start of the period the report covers",
-        "To (UTC)" to "end of the period the report covers",
+        "Date" to "day (UTC) the report covers; the messages were sent on or about this day",
         "Source IP" to "IP address of the server that delivered the messages to the reporter",
         "Source Host" to "name of that server from reverse DNS; usually shows the mail service that sent the messages",
-        "Count" to "number of messages from that server in the period",
+        "Owner" to "organisation the IP address is registered to (RDAP); the mail service, hosting company or internet provider",
+        "Country" to "country where that IP address is registered (RDAP)",
+        "Location" to "approximate city and country of the IP address (geolocation, ip-api.com); for big mail services this is the server, not the person",
+        "Count" to "number of messages from that server that day",
         "Header From" to "domain in the From: header that the reader sees",
         "Envelope From" to "domain of the return path (MAIL FROM) used in the SMTP delivery",
         "Envelope To" to "domain the messages were addressed to",
-        "DMARC DKIM" to "pass if a valid DKIM signature matched the Header From domain, else fail",
-        "DMARC SPF" to "pass if SPF passed for a domain that matched the Header From domain, else fail",
+        "DKIM" to "pass if a valid DKIM signature matched the Header From domain, else fail",
+        "SPF" to "pass if SPF passed for a domain that matched the Header From domain, else fail",
         "DKIM checks" to "each DKIM signature found: signing domain (selector) and result; none = message was not signed",
         "SPF checks" to "each SPF check made: domain checked and result",
         "Disposition" to "what the reporter did: none = delivered, quarantine = spam/junk folder, reject = refused"
@@ -96,20 +118,23 @@ object FailureTable {
 
     /**
      * @param includePassed if true, records that passed are included too
-     * @param hostNames the host name of each source IP, where known
+     * @param ipInfo what is known about each source IP
      */
-    fun build(reports: List<LoadedReport>, includePassed: Boolean = false, hostNames: Map<String, String> = emptyMap()): Table {
+    fun build(reports: List<LoadedReport>, includePassed: Boolean = false, ipInfo: Map<String, IpInfo> = emptyMap()): Table {
         val rows = reports
             .flatMap { lr -> lr.report.records.filter { includePassed || isFailure(it) }.map { lr to it } }
             .sortedWith(compareBy({ it.first.report.metadata.dateBegin }, { it.first.report.metadata.orgName }, { it.second.sourceIp }))
             .map { (lr, rec) ->
                 val md = lr.report.metadata
+                val info = ipInfo[rec.sourceIp]
                 listOf(
                     md.orgName,
-                    md.dateBegin.formatUtc(),
-                    md.dateEnd.formatUtc(),
+                    md.dateBegin.formatDateUtc(),
                     rec.sourceIp,
-                    hostNames[rec.sourceIp] ?: "",
+                    info?.hostName ?: "",
+                    info?.owner ?: "",
+                    info?.registeredCountry ?: "",
+                    info?.location ?: "",
                     rec.count.toString(),
                     rec.identifiers.headerFrom ?: "",
                     rec.identifiers.envelopeFrom ?: "",
@@ -127,11 +152,10 @@ object FailureTable {
         return Table(COLUMNS, rows)
     }
 
-    /** "yyyy-MM-dd HH:mm" in UTC, or "" */
-    internal fun Instant?.formatUtc(): String {
+    /** "yyyy-MM-dd" in UTC, or "" */
+    internal fun Instant?.formatDateUtc(): String {
         if (null == this) return ""
         // ISO-8601, e.g. 2026-11-20T00:00:00Z
-        val iso = this.toString()
-        return iso.substring(0, 10) + " " + iso.substring(11, 16)
+        return this.toString().substring(0, 10)
     }
 }

@@ -30,6 +30,11 @@ object TableFormatter {
         }
         fun line(cells: List<String>) = cells.mapIndexed { c, s -> s.padEnd(widths[c]) }.joinToString(" | ").trimEnd()
         val sb = StringBuilder()
+        if (table.common.isNotEmpty()) {
+            val w = table.common.maxOf { it.first.length }
+            for ((c, v) in table.common) sb.appendLine("${(c + ":").padEnd(w + 1)} ${v.ifEmpty { "(empty)" }}   (all rows)")
+            sb.appendLine()
+        }
         sb.appendLine(line(table.columns))
         sb.appendLine(widths.joinToString("-+-") { "-".repeat(it) })
         for (row in table.rows) sb.appendLine(line(row))
@@ -40,7 +45,7 @@ object TableFormatter {
      * an explanation of each column of the table that has a description, one per line
      */
     fun legend(table: Table, descriptions: Map<String, String>): String {
-        val cols = table.columns.filter { descriptions.containsKey(it) }
+        val cols = (table.common.map { it.first } + table.columns).filter { descriptions.containsKey(it) }
         val width = cols.maxOfOrNull { it.length } ?: 0
         val sb = StringBuilder()
         sb.appendLine("Columns:")
@@ -58,13 +63,18 @@ object TableFormatter {
         sb.appendLine("<!DOCTYPE html>")
         sb.appendLine("<html><head><meta charset=\"utf-8\"><title>${escape(title)}</title></head><body>")
         sb.appendLine("<h3 style=\"font-family:Arial,sans-serif\">${escape(title)}</h3>")
+        if (table.common.isNotEmpty()) {
+            sb.appendLine("<p style=\"font-family:Arial,sans-serif;font-size:12px\">")
+            for ((c, v) in table.common) sb.appendLine("<b>${escape(c)}:</b> ${escape(v.ifEmpty { "(empty)" })} (all rows)<br>")
+            sb.appendLine("</p>")
+        }
         sb.appendLine("<table style=\"border-collapse:collapse\">")
         sb.appendLine("<tr>" + table.columns.joinToString("") { "<th $th>${escape(it)}</th>" } + "</tr>")
         for (row in table.rows) {
             sb.appendLine("<tr>" + row.joinToString("") { "<td $td>${escape(it)}</td>" } + "</tr>")
         }
         sb.appendLine("</table>")
-        val described = table.columns.filter { descriptions.containsKey(it) }
+        val described = (table.common.map { it.first } + table.columns).filter { descriptions.containsKey(it) }
         if (described.isNotEmpty()) {
             sb.appendLine("<p style=\"font-family:Arial,sans-serif;font-size:12px\"><b>Columns</b></p>")
             sb.appendLine("<ul style=\"font-family:Arial,sans-serif;font-size:12px\">")

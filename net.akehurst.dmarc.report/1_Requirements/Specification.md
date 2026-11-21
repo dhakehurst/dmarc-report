@@ -34,17 +34,21 @@ Normative language
 - [REQ-2.3] The application MAY include records that passed, when asked to (`--all`).
 - [REQ-2.4] The table SHALL have these columns, holding only information that a sender can use to identify the message:
   - [REQ-2.4.1] Reporter: the organisation that sent the report,
-  - [REQ-2.4.2] From (UTC) and To (UTC): the date range of the report,
+  - [REQ-2.4.2] Date: the day (UTC) the report starts,
   - [REQ-2.4.3] Source IP: the address of the server that sent the messages,
-  - [REQ-2.4.3.1] Source Host: the host name given by reverse DNS of the source IP, looked up unless asked not to (`--no-lookup`),
+  - [REQ-2.4.3.1] Source Host: the host name given by reverse DNS of the source IP,
+  - [REQ-2.4.3.2] Owner and Country: the organisation and country the source IP is registered to, from RDAP,
+  - [REQ-2.4.3.3] Location: the approximate city and country of the source IP, from geolocation (ip-api.com),
+  - [REQ-2.4.3.4] the lookups of REQ-2.4.3.1 to REQ-2.4.3.3 SHALL be made unless asked not to (`--no-lookup`), and a failed lookup SHALL leave its cells empty and SHALL NOT stop the application,
   - [REQ-2.4.4] Count: the number of messages,
   - [REQ-2.4.5] Header From, Envelope From, Envelope To,
-  - [REQ-2.4.6] DMARC DKIM and DMARC SPF: the evaluated (aligned) results,
+  - [REQ-2.4.6] DKIM and SPF: the evaluated (aligned) results,
   - [REQ-2.4.7] DKIM checks: each DKIM signature as domain, selector and result,
   - [REQ-2.4.8] SPF checks: each SPF check as domain and result,
   - [REQ-2.4.9] Disposition: what the receiver did with the messages.
 - [REQ-2.5] Columns that are empty in every row SHALL be left out, to keep the table narrow.
-- [REQ-2.6] Rows SHALL be sorted by report start date, then reporter, then source IP.
+- [REQ-2.6] When there are two or more rows, a column with the same value in every row SHALL be taken out of the table and printed once above it, as `<column>: <value> (all rows)`.
+- [REQ-2.7] Rows SHALL be sorted by report start date, then reporter, then source IP.
 
 ## 3. Output
 

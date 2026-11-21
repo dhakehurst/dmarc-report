@@ -18,7 +18,7 @@ package net.akehurst.dmarc.report.cli
 
 import net.akehurst.dmarc.report.core.ReportScanner
 import net.akehurst.dmarc.report.dmarc.report.cli.BuildConfig
-import net.akehurst.dmarc.report.core.net.ReverseDns
+import net.akehurst.dmarc.report.core.net.IpLookup
 import net.akehurst.dmarc.report.core.table.FailureTable
 import net.akehurst.dmarc.report.core.table.TableFormatter
 import net.akehurst.kotlinx.filesystem.UserFileSystemDefault
@@ -37,12 +37,13 @@ class DmarcReportApplication(
 
 Reads every DMARC aggregate report (.xml, .gz, .zip, .tar, .tar.gz) in <folder> and its
 sub-folders, and prints a table of the records where DKIM or SPF failed.
-Columns that are empty in every row are left out.
+Columns that are empty in every row are left out, and a column with the same value
+in every row is printed once above the table instead.
 
 Options:
   --html <file>   also write the table as an HTML page, to open in a browser and paste into an email
   --all           include records that passed as well
-  --no-lookup     do not look up the host names of the source IPs (no network needed)
+  --no-lookup     do not look up the source IPs (reverse DNS, owner, country, location); no network needed
   --no-legend     do not print the explanation of the columns after the table
   --version       print the version
   --help          print this help"""
@@ -67,12 +68,12 @@ Options:
             return 1
         }
         val scan = ReportScanner().scan(dir)
-        val hostNames = if (options.noLookup) emptyMap() else {
+        val ipInfo = if (options.noLookup) emptyMap() else {
             val ips = FailureTable.sourceIps(scan.reports, options.all)
-            err("Looking up the host names of ${ips.size} source IPs...")
-            ReverseDns.lookupAll(ips)
+            err("Looking up ${ips.size} source IPs (reverse DNS, RDAP, ip-api.com)...")
+            IpLookup(warn = err).lookupAll(ips)
         }
-        val table = FailureTable.build(scan.reports, options.all, hostNames).withoutEmptyColumns()
+        val table = FailureTable.build(scan.reports, options.all, ipInfo).withoutEmptyColumns().withCommonColumnsMoved()
 
         out(TableFormatter.text(table))
         if (!options.noLegend) out(TableFormatter.legend(table, FailureTable.DESCRIPTIONS))

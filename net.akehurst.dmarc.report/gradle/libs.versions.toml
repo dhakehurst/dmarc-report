@@ -7,11 +7,19 @@ buildconfig = "6.0.10"
 kotlinx-coroutines = "1.11.0"
 nak-kotlinx = "2.4.0"
 ksoup = "0.2.6"
+ktor = "3.6.1"
+kotlinx-serialization = "1.11.0"
+slf4j = "2.0.17"
 
 [libraries]
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 nak-kotlinx-filesystem = { module = "net.akehurst.kotlinx:kotlinx-filesystem", version.ref = "nak-kotlinx" }
 ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
+slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
+ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 
 # Testing
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }

@@ -18,6 +18,7 @@ package net.akehurst.dmarc.report.core.table
 
 import net.akehurst.dmarc.report.core.LoadedReport
 import net.akehurst.dmarc.report.core.api.*
+import net.akehurst.dmarc.report.core.net.IpInfo
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -50,23 +51,24 @@ class test_FailureTable {
     @Test
     fun only_failed_records() {
         val t = FailureTable.build(listOf(report))
-        assertEquals(listOf("192.0.2.2", "192.0.2.3", "192.0.2.4"), t.rows.map { it[3] })
+        assertEquals(listOf("192.0.2.2", "192.0.2.3", "192.0.2.4"), t.rows.map { it[2] })
     }
 
     @Test
     fun cells() {
-        val row = FailureTable.build(listOf(report)).rows.first { "192.0.2.3" == it[3] }
+        val row = FailureTable.build(listOf(report)).rows.first { "192.0.2.3" == it[2] }
         assertEquals("google.com", row[0])
-        assertEquals("2025-11-20 00:00", row[1])
-        assertEquals("2025-11-20 23:59", row[2])
-        assertEquals("example.org (old) fail, example.org (s1) pass", row[11])
-        assertEquals("none", FailureTable.build(listOf(report)).rows.first { "192.0.2.4" == it[3] }[11])
+        assertEquals("2025-11-20", row[1])
+        assertEquals("example.org (old) fail, example.org (s1) pass", row[13])
+        assertEquals("none", FailureTable.build(listOf(report)).rows.first { "192.0.2.4" == it[2] }[13])
     }
 
     @Test
     fun host_names() {
-        val t = FailureTable.build(listOf(report), hostNames = mapOf("192.0.2.2" to "mail-sor-f41.google.com"))
-        assertEquals(listOf("mail-sor-f41.google.com", "", ""), t.rows.map { it[4] })
+        val info = IpInfo("mail-sor-f41.google.com", "Google LLC", "US", "United States", "Mountain View")
+        val t = FailureTable.build(listOf(report), ipInfo = mapOf("192.0.2.2" to info))
+        assertEquals(listOf("mail-sor-f41.google.com", "", ""), t.rows.map { it[3] })
+        assertEquals(listOf("Google LLC", "US", "Mountain View, United States"), t.rows[0].subList(4, 7))
     }
 
     @Test
@@ -94,6 +96,22 @@ class test_FailureTable {
     @Test
     fun every_column_is_described() {
         assertEquals(FailureTable.COLUMNS.toSet(), FailureTable.DESCRIPTIONS.keys)
+    }
+
+    @Test
+    fun withCommonColumnsMoved() {
+        val t = Table(listOf("a", "b", "c"), listOf(listOf("1", "x", "p"), listOf("2", "x", "q")))
+        val m = t.withCommonColumnsMoved()
+        assertEquals(listOf("a", "c"), m.columns)
+        assertEquals(listOf(listOf("1", "p"), listOf("2", "q")), m.rows)
+        assertEquals(listOf("b" to "x"), m.common)
+        assertTrue(TableFormatter.text(m).startsWith("b: x   (all rows)"))
+    }
+
+    @Test
+    fun withCommonColumnsMoved_single_row_unchanged() {
+        val t = Table(listOf("a"), listOf(listOf("1")))
+        assertEquals(t, t.withCommonColumnsMoved())
     }
 
     @Test

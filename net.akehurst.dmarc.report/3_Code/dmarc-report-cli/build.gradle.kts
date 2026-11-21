@@ -21,5 +21,11 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.core)
             }
         }
+        jvmMain {
+            dependencies {
+                // ktor logs through SLF4J; this keeps it quiet
+                runtimeOnly(libs.slf4j.nop)
+            }
+        }
     }
 }
