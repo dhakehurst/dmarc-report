@@ -79,6 +79,18 @@ class test_FailureTable {
     }
 
     @Test
+    fun legend_only_for_shown_columns() {
+        val legend = TableFormatter.legend(Table(listOf("Source IP", "Count"), emptyList()), FailureTable.DESCRIPTIONS)
+        assertTrue(legend.contains("Source IP"))
+        assertTrue(!legend.contains("Disposition"))
+    }
+
+    @Test
+    fun every_column_is_described() {
+        assertEquals(FailureTable.COLUMNS.toSet(), FailureTable.DESCRIPTIONS.keys)
+    }
+
+    @Test
     fun html_escapes() {
         val html = TableFormatter.html(Table(listOf("a<b"), listOf(listOf("x&y"))), "t")
         assertTrue(html.contains("a&lt;b"))

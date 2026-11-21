@@ -41,6 +41,7 @@ Columns that are empty in every row are left out.
 Options:
   --html <file>   also write the table as an HTML page, to open in a browser and paste into an email
   --all           include records that passed as well
+  --no-legend     do not print the explanation of the columns after the table
   --version       print the version
   --help          print this help"""
     }
@@ -48,7 +49,8 @@ Options:
     data class Options(
         val folder: String,
         val htmlFile: String?,
-        val all: Boolean
+        val all: Boolean,
+        val noLegend: Boolean
     )
 
     /**
@@ -65,12 +67,13 @@ Options:
         val table = FailureTable.build(scan.reports, options.all).withoutEmptyColumns()
 
         out(TableFormatter.text(table))
+        if (!options.noLegend) out(TableFormatter.legend(table, FailureTable.DESCRIPTIONS))
         err("${scan.reports.size} reports read, ${table.rows.size} ${if (options.all) "records" else "records with a failure"}.")
         for (p in scan.problems) err("Skipped ${p.location}: ${p.message}")
 
         if (null != options.htmlFile) {
             val title = if (options.all) "DMARC records" else "DMARC records with a DKIM or SPF failure"
-            if (writeFile(options.htmlFile, TableFormatter.html(table, title))) {
+            if (writeFile(options.htmlFile, TableFormatter.html(table, title, if (options.noLegend) emptyMap() else FailureTable.DESCRIPTIONS))) {
                 err("HTML written to ${options.htmlFile}")
             } else {
                 err("Cannot write ${options.htmlFile}")
@@ -84,6 +87,7 @@ Options:
         var folder: String? = null
         var html: String? = null
         var all = false
+        var noLegend = false
         var i = 0
         while (i < args.size) {
             when (val a = args[i]) {
@@ -96,6 +100,7 @@ Options:
                     return null
                 }
                 "--all" -> all = true
+                "--no-legend" -> noLegend = true
                 "--html" -> {
                     i++
                     if (i >= args.size) return usageError("--html needs a file name")
@@ -110,7 +115,7 @@ Options:
             i++
         }
         if (null == folder) return usageError("No folder given")
-        return Options(folder, html, all)
+        return Options(folder, html, all, noLegend)
     }
 
     private fun usageError(message: String): Options? {

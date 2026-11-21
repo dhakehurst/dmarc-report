@@ -61,6 +61,25 @@ object FailureTable {
         "Disposition"
     )
 
+    /**
+     * what each column means, written for the sender who reads the table
+     */
+    val DESCRIPTIONS = mapOf(
+        "Reporter" to "the mail provider that received the messages and sent the report",
+        "From (UTC)" to "start of the period the report covers",
+        "To (UTC)" to "end of the period the report covers",
+        "Source IP" to "IP address of the server that delivered the messages to the reporter",
+        "Count" to "number of messages from that server in the period",
+        "Header From" to "domain in the From: header that the reader sees",
+        "Envelope From" to "domain of the return path (MAIL FROM) used in the SMTP delivery",
+        "Envelope To" to "domain the messages were addressed to",
+        "DMARC DKIM" to "pass if a valid DKIM signature matched the Header From domain, else fail",
+        "DMARC SPF" to "pass if SPF passed for a domain that matched the Header From domain, else fail",
+        "DKIM checks" to "each DKIM signature found: signing domain (selector) and result; none = message was not signed",
+        "SPF checks" to "each SPF check made: domain checked and result",
+        "Disposition" to "what the reporter did: none = delivered, quarantine = spam/junk folder, reject = refused"
+    )
+
     fun isFailure(record: Record): Boolean =
         PASS != record.policyEvaluated.dkim?.lowercase()
                 || PASS != record.policyEvaluated.spf?.lowercase()

@@ -37,9 +37,21 @@ object TableFormatter {
     }
 
     /**
+     * an explanation of each column of the table that has a description, one per line
+     */
+    fun legend(table: Table, descriptions: Map<String, String>): String {
+        val cols = table.columns.filter { descriptions.containsKey(it) }
+        val width = cols.maxOfOrNull { it.length } ?: 0
+        val sb = StringBuilder()
+        sb.appendLine("Columns:")
+        for (c in cols) sb.appendLine("  ${c.padEnd(width)}  ${descriptions[c]}")
+        return sb.toString()
+    }
+
+    /**
      * a self-contained HTML page; open it in a browser, select the table and paste it into an email
      */
-    fun html(table: Table, title: String): String {
+    fun html(table: Table, title: String, descriptions: Map<String, String> = emptyMap()): String {
         val td = "style=\"border:1px solid #999;padding:2px 6px;font-family:Arial,sans-serif;font-size:12px;white-space:nowrap\""
         val th = "style=\"border:1px solid #999;padding:2px 6px;font-family:Arial,sans-serif;font-size:12px;background:#eee;text-align:left\""
         val sb = StringBuilder()
@@ -52,6 +64,13 @@ object TableFormatter {
             sb.appendLine("<tr>" + row.joinToString("") { "<td $td>${escape(it)}</td>" } + "</tr>")
         }
         sb.appendLine("</table>")
+        val described = table.columns.filter { descriptions.containsKey(it) }
+        if (described.isNotEmpty()) {
+            sb.appendLine("<p style=\"font-family:Arial,sans-serif;font-size:12px\"><b>Columns</b></p>")
+            sb.appendLine("<ul style=\"font-family:Arial,sans-serif;font-size:12px\">")
+            for (c in described) sb.appendLine("<li><b>${escape(c)}</b>: ${escape(descriptions[c]!!)}</li>")
+            sb.appendLine("</ul>")
+        }
         sb.appendLine("</body></html>")
         return sb.toString()
     }

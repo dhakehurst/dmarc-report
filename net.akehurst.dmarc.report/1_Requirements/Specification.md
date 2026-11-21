@@ -49,7 +49,8 @@ Normative language
 
 - [REQ-3.1] The table SHALL be printed as text aligned with spaces, to paste into a plain text or monospaced email.
 - [REQ-3.2] The application SHALL, when asked to (`--html <file>`), write the table as an HTML page that can be opened in a browser and pasted into an email as a table.
-- [REQ-3.3] The number of reports read, the number of rows, and the skipped files SHALL be written to standard error, so that standard output holds only the table.
+- [REQ-3.3] After the table, the application SHALL print what each shown column means, unless asked not to (`--no-legend`); the HTML page SHALL include the same explanation.
+- [REQ-3.4] The number of reports read, the number of rows, and the skipped files SHALL be written to standard error, so that standard output holds only the table.
 
 ## 4. Running
 

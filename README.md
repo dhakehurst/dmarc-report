@@ -29,6 +29,7 @@ On Windows use `bin\dmarc-report.bat`.
 |---|---|
 | `--html <file>` | also write the table as an HTML page; open it in a browser, select the table and paste it into an email |
 | `--all` | include records that passed as well |
+| `--no-legend` | do not print the explanation of the columns after the table |
 | `--version` | print the version |
 | `--help` | print the help |
 
