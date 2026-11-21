@@ -1,0 +1,21 @@
+[versions]
+project = "0.1.0-SNAPSHOT"
+
+kotlin = "2.4.0"
+buildconfig = "6.0.10"
+
+kotlinx-coroutines = "1.11.0"
+nak-kotlinx = "2.4.0"
+ksoup = "0.2.6"
+
+[libraries]
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+nak-kotlinx-filesystem = { module = "net.akehurst.kotlinx:kotlinx-filesystem", version.ref = "nak-kotlinx" }
+ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
+
+# Testing
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+buildconfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }

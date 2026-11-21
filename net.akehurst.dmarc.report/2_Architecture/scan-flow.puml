@@ -1,0 +1,24 @@
+@startuml
+!pragma layout smetana
+
+start
+:walk files in folder (kotlinx-filesystem);
+repeat
+  :read bytes;
+  switch (content)
+  case (XML)
+    :DmarcXmlReader (ksoup);
+  case (gzip)
+    :Gzip.decompress, then look again;
+  case (zip)
+    :ZipFileSystem, look at each entry;
+  case (tar)
+    :Tar.entries, look at each entry;
+  case (other)
+    :record as skipped;
+  endswitch
+repeat while (more files?)
+:FailureTable.build (failed records only);
+:TableFormatter.text / html;
+stop
+@enduml

@@ -1,0 +1,17 @@
+@startuml
+!pragma layout smetana
+
+artifact "dmarc-report-cli" as cli
+artifact "dmarc-report-core" as core
+
+artifact "ake.kotlinx-filesystem" as fs
+artifact "ksoup" as ksoup
+
+'dashed - api dependency
+'dotted - impl dependency
+
+cli -[dotted]-> core
+core -[dashed]-> fs
+core -[dotted]-> ksoup
+
+@enduml
