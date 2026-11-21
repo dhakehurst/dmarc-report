@@ -48,27 +48,37 @@ class test_FailureTable {
         )
     )
 
+    private fun Table.column(name: String): List<String> = columns.indexOf(name).let { c -> rows.map { it[c] } }
+
     @Test
     fun only_failed_records() {
+        val t = FailureTable.build(listOf(report), detailed = true)
+        assertEquals(listOf("192.0.2.2", "192.0.2.3", "192.0.2.4"), t.column("Source IP"))
+    }
+
+    @Test
+    fun basic_columns() {
         val t = FailureTable.build(listOf(report))
-        assertEquals(listOf("gmail.com softfail", "example.org pass", "example.org fail"), t.rows.map { it[12] })
+        assertEquals(FailureTable.BASIC_COLUMNS, t.columns)
+        assertEquals(listOf("2025-11-20", "2025-11-20", "2025-11-20"), t.column("Date"))
+        assertEquals(listOf("google.com", "google.com", "google.com"), t.column("Reporter"))
     }
 
     @Test
-    fun cells() {
-        val row = FailureTable.build(listOf(report)).rows[1]
-        assertEquals("google.com", row[0])
-        assertEquals("2025-11-20", row[1])
-        assertEquals("example.org (old) fail, example.org (s1) pass", row[11])
-        assertEquals("none", FailureTable.build(listOf(report)).rows[2][11])
+    fun detailed_cells() {
+        val t = FailureTable.build(listOf(report), detailed = true)
+        assertEquals(FailureTable.COLUMNS, t.columns)
+        assertEquals(listOf("example.org (s1) pass", "example.org (old) fail, example.org (s1) pass", "none"), t.column("DKIM checks"))
+        assertEquals(listOf("gmail.com softfail", "example.org pass", "example.org fail"), t.column("SPF checks"))
     }
 
     @Test
-    fun host_names() {
+    fun ip_info() {
         val info = IpInfo("mail-sor-f41.google.com", "Google LLC", "US", "United States")
         val t = FailureTable.build(listOf(report), ipInfo = mapOf("192.0.2.2" to info))
-        assertEquals(listOf("mail-sor-f41.google.com", "", ""), t.rows.map { it[2] })
-        assertEquals(listOf("Google LLC", "United States"), t.rows[0].subList(3, 5))
+        assertEquals(listOf("mail-sor-f41.google.com", "", ""), t.column("Source Host"))
+        assertEquals(listOf("Google LLC", "", ""), t.column("Owner"))
+        assertEquals(listOf("United States", "", ""), t.column("Country"))
     }
 
     @Test

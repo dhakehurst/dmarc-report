@@ -32,20 +32,17 @@ Normative language
   - [REQ-2.2.3] any DKIM authentication result is not `pass`, or
   - [REQ-2.2.4] any SPF authentication result is not `pass`.
 - [REQ-2.3] The application MAY include records that passed, when asked to (`--all`).
-- [REQ-2.4] The table SHALL have these columns, holding only information that a sender can use to identify the message:
-  - [REQ-2.4.1] Reporter: the organisation that sent the report,
-  - [REQ-2.4.2] Date: the day (UTC) the report starts,
-  - [REQ-2.4.3] the source IP itself SHALL NOT be shown, as it does not help the sender; instead:
-  - [REQ-2.4.3.1] Source Host: the host name given by reverse DNS of the source IP,
-  - [REQ-2.4.3.2] Owner: the organisation the source IP is registered to, from RDAP,
-  - [REQ-2.4.3.3] Country: the country of the source IP from geolocation (ip-api.com), or else the country it is registered in (RDAP),
-  - [REQ-2.4.3.4] the lookups of REQ-2.4.3.1 to REQ-2.4.3.3 SHALL be made unless asked not to (`--no-lookup`), and a failed lookup SHALL leave its cells empty and SHALL NOT stop the application,
-  - [REQ-2.4.4] Count: the number of messages,
-  - [REQ-2.4.5] Header From, Envelope From, Envelope To,
-  - [REQ-2.4.6] DKIM and SPF: the evaluated (aligned) results,
-  - [REQ-2.4.7] DKIM checks: each DKIM signature as domain, selector and result,
-  - [REQ-2.4.8] SPF checks: each SPF check as domain and result,
-  - [REQ-2.4.9] Disposition: what the receiver did with the messages.
+- [REQ-2.4] By default the table SHALL have only the columns that help an ordinary user recognise a message they sent:
+  - [REQ-2.4.1] Date: the day (UTC) the report starts,
+  - [REQ-2.4.2] Source Host: the host name given by reverse DNS of the sending server's IP,
+  - [REQ-2.4.3] Owner: the organisation the sending server's IP is registered to, from RDAP,
+  - [REQ-2.4.4] Country: the country of the sending server's IP from geolocation (ip-api.com), or else the country it is registered in (RDAP),
+  - [REQ-2.4.5] Count: the number of messages,
+  - [REQ-2.4.6] Header From and Envelope To,
+  - [REQ-2.4.7] Reporter: the organisation that sent the report,
+  - [REQ-2.4.8] Disposition: what the receiver did with the messages.
+  - [REQ-2.4.9] The lookups of REQ-2.4.2 to REQ-2.4.4 SHALL be made unless asked not to (`--no-lookup`); a failed lookup SHALL leave its cells empty and SHALL NOT stop the application.
+- [REQ-2.4a] When asked to (`--details`), the table SHALL also have the technical columns: Source IP, Envelope From, the evaluated DKIM and SPF results, each DKIM signature (domain, selector, result) and each SPF check (domain, result).
 - [REQ-2.5] Columns that are empty in every row SHALL be left out, to keep the table narrow.
 - [REQ-2.6] When there are two or more rows, a column with the same value in every row SHALL be taken out of the table and printed once above it, as `<column>: <value> (all rows)`.
 - [REQ-2.7] Rows SHALL be sorted by report start date, then reporter, then source IP.

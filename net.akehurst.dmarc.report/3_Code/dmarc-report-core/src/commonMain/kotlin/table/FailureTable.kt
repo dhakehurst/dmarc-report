@@ -63,20 +63,35 @@ object FailureTable {
 
     const val PASS = "pass"
 
+    /** every column, as shown with the detailed option */
     val COLUMNS = listOf(
-        "Reporter",
         "Date",
         "Source Host",
         "Owner",
         "Country",
         "Count",
         "Header From",
-        "Envelope From",
         "Envelope To",
+        "Reporter",
+        "Disposition",
+        "Source IP",
+        "Envelope From",
         "DKIM",
         "SPF",
         "DKIM checks",
-        "SPF checks",
+        "SPF checks"
+    )
+
+    /** the columns that help an ordinary user recognise a message they sent */
+    val BASIC_COLUMNS = listOf(
+        "Date",
+        "Source Host",
+        "Owner",
+        "Country",
+        "Count",
+        "Header From",
+        "Envelope To",
+        "Reporter",
         "Disposition"
     )
 
@@ -93,6 +108,7 @@ object FailureTable {
         "Header From" to "domain in the From: header that the reader sees",
         "Envelope From" to "domain of the return path (MAIL FROM) used in the SMTP delivery",
         "Envelope To" to "domain the messages were addressed to",
+        "Source IP" to "IP address of the server that delivered the messages to the reporter",
         "DKIM" to "pass if a valid DKIM signature matched the Header From domain, else fail",
         "SPF" to "pass if SPF passed for a domain that matched the Header From domain, else fail",
         "DKIM checks" to "each DKIM signature found: signing domain (selector) and result; none = message was not signed",
@@ -115,35 +131,39 @@ object FailureTable {
     /**
      * @param includePassed if true, records that passed are included too
      * @param ipInfo what is known about each source IP
+     * @param detailed if true, all [COLUMNS], otherwise only the [BASIC_COLUMNS]
      */
-    fun build(reports: List<LoadedReport>, includePassed: Boolean = false, ipInfo: Map<String, IpInfo> = emptyMap()): Table {
+    fun build(reports: List<LoadedReport>, includePassed: Boolean = false, ipInfo: Map<String, IpInfo> = emptyMap(), detailed: Boolean = false): Table {
+        val columns = if (detailed) COLUMNS else BASIC_COLUMNS
         val rows = reports
             .flatMap { lr -> lr.report.records.filter { includePassed || isFailure(it) }.map { lr to it } }
             .sortedWith(compareBy({ it.first.report.metadata.dateBegin }, { it.first.report.metadata.orgName }, { it.second.sourceIp }))
             .map { (lr, rec) ->
                 val md = lr.report.metadata
                 val info = ipInfo[rec.sourceIp]
-                listOf(
-                    md.orgName,
-                    md.dateBegin.formatDateUtc(),
-                    info?.hostName ?: "",
-                    info?.owner ?: "",
-                    info?.country ?: "",
-                    rec.count.toString(),
-                    rec.identifiers.headerFrom ?: "",
-                    rec.identifiers.envelopeFrom ?: "",
-                    rec.identifiers.envelopeTo ?: "",
-                    rec.policyEvaluated.dkim ?: "",
-                    rec.policyEvaluated.spf ?: "",
-                    rec.authResults.dkim.joinToString(", ") { d ->
+                val cells = mapOf(
+                    "Date" to md.dateBegin.formatDateUtc(),
+                    "Source Host" to (info?.hostName ?: ""),
+                    "Owner" to (info?.owner ?: ""),
+                    "Country" to (info?.country ?: ""),
+                    "Count" to rec.count.toString(),
+                    "Header From" to (rec.identifiers.headerFrom ?: ""),
+                    "Envelope To" to (rec.identifiers.envelopeTo ?: ""),
+                    "Reporter" to md.orgName,
+                    "Disposition" to (rec.policyEvaluated.disposition ?: ""),
+                    "Source IP" to rec.sourceIp,
+                    "Envelope From" to (rec.identifiers.envelopeFrom ?: ""),
+                    "DKIM" to (rec.policyEvaluated.dkim ?: ""),
+                    "SPF" to (rec.policyEvaluated.spf ?: ""),
+                    "DKIM checks" to rec.authResults.dkim.joinToString(", ") { d ->
                         val sel = d.selector?.let { " ($it)" } ?: ""
                         "${d.domain}$sel ${d.result}"
                     }.ifEmpty { "none" },
-                    rec.authResults.spf.joinToString(", ") { "${it.domain} ${it.result}" }.ifEmpty { "none" },
-                    rec.policyEvaluated.disposition ?: ""
+                    "SPF checks" to rec.authResults.spf.joinToString(", ") { "${it.domain} ${it.result}" }.ifEmpty { "none" }
                 )
+                columns.map { cells.getValue(it) }
             }
-        return Table(COLUMNS, rows)
+        return Table(columns, rows)
     }
 
     /** "yyyy-MM-dd" in UTC, or "" */

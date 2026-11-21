@@ -36,12 +36,15 @@ class DmarcReportApplication(
         const val USAGE = """Usage: dmarc-report [options] <folder>
 
 Reads every DMARC aggregate report (.xml, .gz, .zip, .tar, .tar.gz) in <folder> and its
-sub-folders, and prints a table of the records where DKIM or SPF failed.
+sub-folders, and prints a table of the records where DKIM or SPF failed, with the
+columns that help a sender recognise the message.
 Columns that are empty in every row are left out, and a column with the same value
 in every row is printed once above the table instead.
 
 Options:
   --html <file>   also write the table as an HTML page, to open in a browser and paste into an email
+  --details       show every column, including the technical ones (source IP, envelope from,
+                  DKIM and SPF results) needed to work out why a message failed
   --all           include records that passed as well
   --no-lookup     do not look up the source IPs (reverse DNS, owner, country); no network needed
   --no-legend     do not print the explanation of the columns after the table
@@ -54,7 +57,8 @@ Options:
         val htmlFile: String?,
         val all: Boolean,
         val noLegend: Boolean,
-        val noLookup: Boolean
+        val noLookup: Boolean,
+        val details: Boolean
     )
 
     /**
@@ -73,7 +77,7 @@ Options:
             err("Looking up ${ips.size} source IPs (reverse DNS, RDAP, ip-api.com)...")
             IpLookup(warn = err).lookupAll(ips)
         }
-        val table = FailureTable.build(scan.reports, options.all, ipInfo).withoutEmptyColumns().withCommonColumnsMoved()
+        val table = FailureTable.build(scan.reports, options.all, ipInfo, options.details).withoutEmptyColumns().withCommonColumnsMoved()
 
         out(TableFormatter.text(table))
         if (!options.noLegend) out(TableFormatter.legend(table, FailureTable.DESCRIPTIONS))
@@ -98,6 +102,7 @@ Options:
         var all = false
         var noLegend = false
         var noLookup = false
+        var details = false
         var i = 0
         while (i < args.size) {
             when (val a = args[i]) {
@@ -112,6 +117,7 @@ Options:
                 "--all" -> all = true
                 "--no-legend" -> noLegend = true
                 "--no-lookup" -> noLookup = true
+                "--details" -> details = true
                 "--html" -> {
                     i++
                     if (i >= args.size) return usageError("--html needs a file name")
@@ -126,7 +132,7 @@ Options:
             i++
         }
         if (null == folder) return usageError("No folder given")
-        return Options(folder, html, all, noLegend, noLookup)
+        return Options(folder, html, all, noLegend, noLookup, details)
     }
 
     private fun usageError(message: String): Options? {
