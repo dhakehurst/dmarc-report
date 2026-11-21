@@ -50,6 +50,7 @@ object FailureTable {
         "From (UTC)",
         "To (UTC)",
         "Source IP",
+        "Source Host",
         "Count",
         "Header From",
         "Envelope From",
@@ -69,6 +70,7 @@ object FailureTable {
         "From (UTC)" to "start of the period the report covers",
         "To (UTC)" to "end of the period the report covers",
         "Source IP" to "IP address of the server that delivered the messages to the reporter",
+        "Source Host" to "name of that server from reverse DNS; usually shows the mail service that sent the messages",
         "Count" to "number of messages from that server in the period",
         "Header From" to "domain in the From: header that the reader sees",
         "Envelope From" to "domain of the return path (MAIL FROM) used in the SMTP delivery",
@@ -80,6 +82,12 @@ object FailureTable {
         "Disposition" to "what the reporter did: none = delivered, quarantine = spam/junk folder, reject = refused"
     )
 
+    /**
+     * the source IPs of the records that would be in the table
+     */
+    fun sourceIps(reports: List<LoadedReport>, includePassed: Boolean = false): Set<String> =
+        reports.flatMap { lr -> lr.report.records.filter { includePassed || isFailure(it) }.map { it.sourceIp } }.toSet()
+
     fun isFailure(record: Record): Boolean =
         PASS != record.policyEvaluated.dkim?.lowercase()
                 || PASS != record.policyEvaluated.spf?.lowercase()
@@ -88,8 +96,9 @@ object FailureTable {
 
     /**
      * @param includePassed if true, records that passed are included too
+     * @param hostNames the host name of each source IP, where known
      */
-    fun build(reports: List<LoadedReport>, includePassed: Boolean = false): Table {
+    fun build(reports: List<LoadedReport>, includePassed: Boolean = false, hostNames: Map<String, String> = emptyMap()): Table {
         val rows = reports
             .flatMap { lr -> lr.report.records.filter { includePassed || isFailure(it) }.map { lr to it } }
             .sortedWith(compareBy({ it.first.report.metadata.dateBegin }, { it.first.report.metadata.orgName }, { it.second.sourceIp }))
@@ -100,6 +109,7 @@ object FailureTable {
                     md.dateBegin.formatUtc(),
                     md.dateEnd.formatUtc(),
                     rec.sourceIp,
+                    hostNames[rec.sourceIp] ?: "",
                     rec.count.toString(),
                     rec.identifiers.headerFrom ?: "",
                     rec.identifiers.envelopeFrom ?: "",

@@ -18,6 +18,7 @@ package net.akehurst.dmarc.report.cli
 
 import net.akehurst.dmarc.report.core.ReportScanner
 import net.akehurst.dmarc.report.dmarc.report.cli.BuildConfig
+import net.akehurst.dmarc.report.core.net.ReverseDns
 import net.akehurst.dmarc.report.core.table.FailureTable
 import net.akehurst.dmarc.report.core.table.TableFormatter
 import net.akehurst.kotlinx.filesystem.UserFileSystemDefault
@@ -41,6 +42,7 @@ Columns that are empty in every row are left out.
 Options:
   --html <file>   also write the table as an HTML page, to open in a browser and paste into an email
   --all           include records that passed as well
+  --no-lookup     do not look up the host names of the source IPs (no network needed)
   --no-legend     do not print the explanation of the columns after the table
   --version       print the version
   --help          print this help"""
@@ -50,7 +52,8 @@ Options:
         val folder: String,
         val htmlFile: String?,
         val all: Boolean,
-        val noLegend: Boolean
+        val noLegend: Boolean,
+        val noLookup: Boolean
     )
 
     /**
@@ -64,7 +67,12 @@ Options:
             return 1
         }
         val scan = ReportScanner().scan(dir)
-        val table = FailureTable.build(scan.reports, options.all).withoutEmptyColumns()
+        val hostNames = if (options.noLookup) emptyMap() else {
+            val ips = FailureTable.sourceIps(scan.reports, options.all)
+            err("Looking up the host names of ${ips.size} source IPs...")
+            ReverseDns.lookupAll(ips)
+        }
+        val table = FailureTable.build(scan.reports, options.all, hostNames).withoutEmptyColumns()
 
         out(TableFormatter.text(table))
         if (!options.noLegend) out(TableFormatter.legend(table, FailureTable.DESCRIPTIONS))
@@ -88,6 +96,7 @@ Options:
         var html: String? = null
         var all = false
         var noLegend = false
+        var noLookup = false
         var i = 0
         while (i < args.size) {
             when (val a = args[i]) {
@@ -101,6 +110,7 @@ Options:
                 }
                 "--all" -> all = true
                 "--no-legend" -> noLegend = true
+                "--no-lookup" -> noLookup = true
                 "--html" -> {
                     i++
                     if (i >= args.size) return usageError("--html needs a file name")
@@ -115,7 +125,7 @@ Options:
             i++
         }
         if (null == folder) return usageError("No folder given")
-        return Options(folder, html, all, noLegend)
+        return Options(folder, html, all, noLegend, noLookup)
     }
 
     private fun usageError(message: String): Options? {

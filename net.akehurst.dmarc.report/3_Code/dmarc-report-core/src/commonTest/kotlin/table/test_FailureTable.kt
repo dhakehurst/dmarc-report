@@ -59,8 +59,14 @@ class test_FailureTable {
         assertEquals("google.com", row[0])
         assertEquals("2025-11-20 00:00", row[1])
         assertEquals("2025-11-20 23:59", row[2])
-        assertEquals("example.org (old) fail, example.org (s1) pass", row[10])
-        assertEquals("none", FailureTable.build(listOf(report)).rows.first { "192.0.2.4" == it[3] }[10])
+        assertEquals("example.org (old) fail, example.org (s1) pass", row[11])
+        assertEquals("none", FailureTable.build(listOf(report)).rows.first { "192.0.2.4" == it[3] }[11])
+    }
+
+    @Test
+    fun host_names() {
+        val t = FailureTable.build(listOf(report), hostNames = mapOf("192.0.2.2" to "mail-sor-f41.google.com"))
+        assertEquals(listOf("mail-sor-f41.google.com", "", ""), t.rows.map { it[4] })
     }
 
     @Test

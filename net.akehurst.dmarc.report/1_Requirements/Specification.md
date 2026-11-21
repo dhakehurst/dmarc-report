@@ -36,6 +36,7 @@ Normative language
   - [REQ-2.4.1] Reporter: the organisation that sent the report,
   - [REQ-2.4.2] From (UTC) and To (UTC): the date range of the report,
   - [REQ-2.4.3] Source IP: the address of the server that sent the messages,
+  - [REQ-2.4.3.1] Source Host: the host name given by reverse DNS of the source IP, looked up unless asked not to (`--no-lookup`),
   - [REQ-2.4.4] Count: the number of messages,
   - [REQ-2.4.5] Header From, Envelope From, Envelope To,
   - [REQ-2.4.6] DMARC DKIM and DMARC SPF: the evaluated (aligned) results,
