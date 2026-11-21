@@ -54,7 +54,7 @@ class test_IpLookupParsing {
             [{"status":"success","country":"Germany","countryCode":"DE","city":"Berlin","isp":"Deutsche Telekom AG","org":"","query":"80.187.0.1"},
              {"status":"fail","message":"private range","query":"192.168.0.1"}]
         """.trimIndent()
-        assertEquals(mapOf("80.187.0.1" to GeoInfo("Germany", "Berlin", "Deutsche Telekom AG")), GeoIp.parseBatch(json))
+        assertEquals(mapOf("80.187.0.1" to GeoInfo("Germany", "Deutsche Telekom AG")), GeoIp.parseBatch(json))
     }
 
     @Test
@@ -63,8 +63,9 @@ class test_IpLookupParsing {
     }
 
     @Test
-    fun location() {
-        assertEquals("Berlin, Germany", IpInfo(null, null, null, "Germany", "Berlin").location)
-        assertEquals(null, IpInfo(null, null, null, null, null).location)
+    fun country_prefers_geolocation() {
+        assertEquals("Germany", IpInfo(null, null, "DE", "Germany").country)
+        assertEquals("DE", IpInfo(null, null, "DE", null).country)
+        assertEquals(null, IpInfo(null, null, null, null).country)
     }
 }

@@ -34,16 +34,15 @@ data class IpInfo(
     val hostName: String?,
     val owner: String?,
     val registeredCountry: String?,
-    val geoCountry: String?,
-    val geoCity: String?
+    val geoCountry: String?
 ) {
-    /** "City, Country", or whichever of the two is known */
-    val location: String? get() = listOfNotNull(geoCity, geoCountry).joinToString(", ").ifEmpty { null }
+    /** the country from geolocation, or else where the address is registered */
+    val country: String? get() = geoCountry ?: registeredCountry
 }
 
 /**
  * looks up the host name (reverse DNS), registered owner and country (RDAP),
- * and approximate location (geolocation) of IP addresses.
+ * and country from geolocation of IP addresses.
  * A lookup that fails leaves its fields empty; it never stops the others.
  */
 class IpLookup(
@@ -70,8 +69,7 @@ class IpLookup(
                 hostName = hosts[ip],
                 owner = rdapInfo[ip]?.owner ?: geoInfo[ip]?.isp,
                 registeredCountry = rdapInfo[ip]?.country,
-                geoCountry = geoInfo[ip]?.country,
-                geoCity = geoInfo[ip]?.city
+                geoCountry = geoInfo[ip]?.country
             )
         }
     }

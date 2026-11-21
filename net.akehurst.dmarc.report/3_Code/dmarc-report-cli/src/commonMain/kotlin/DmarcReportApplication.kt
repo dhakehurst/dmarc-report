@@ -43,7 +43,7 @@ in every row is printed once above the table instead.
 Options:
   --html <file>   also write the table as an HTML page, to open in a browser and paste into an email
   --all           include records that passed as well
-  --no-lookup     do not look up the source IPs (reverse DNS, owner, country, location); no network needed
+  --no-lookup     do not look up the source IPs (reverse DNS, owner, country); no network needed
   --no-legend     do not print the explanation of the columns after the table
   --version       print the version
   --help          print this help"""

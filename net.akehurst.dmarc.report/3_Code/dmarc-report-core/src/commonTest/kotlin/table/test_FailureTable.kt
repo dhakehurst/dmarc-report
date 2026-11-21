@@ -51,24 +51,24 @@ class test_FailureTable {
     @Test
     fun only_failed_records() {
         val t = FailureTable.build(listOf(report))
-        assertEquals(listOf("192.0.2.2", "192.0.2.3", "192.0.2.4"), t.rows.map { it[2] })
+        assertEquals(listOf("gmail.com softfail", "example.org pass", "example.org fail"), t.rows.map { it[12] })
     }
 
     @Test
     fun cells() {
-        val row = FailureTable.build(listOf(report)).rows.first { "192.0.2.3" == it[2] }
+        val row = FailureTable.build(listOf(report)).rows[1]
         assertEquals("google.com", row[0])
         assertEquals("2025-11-20", row[1])
-        assertEquals("example.org (old) fail, example.org (s1) pass", row[13])
-        assertEquals("none", FailureTable.build(listOf(report)).rows.first { "192.0.2.4" == it[2] }[13])
+        assertEquals("example.org (old) fail, example.org (s1) pass", row[11])
+        assertEquals("none", FailureTable.build(listOf(report)).rows[2][11])
     }
 
     @Test
     fun host_names() {
-        val info = IpInfo("mail-sor-f41.google.com", "Google LLC", "US", "United States", "Mountain View")
+        val info = IpInfo("mail-sor-f41.google.com", "Google LLC", "US", "United States")
         val t = FailureTable.build(listOf(report), ipInfo = mapOf("192.0.2.2" to info))
-        assertEquals(listOf("mail-sor-f41.google.com", "", ""), t.rows.map { it[3] })
-        assertEquals(listOf("Google LLC", "US", "Mountain View, United States"), t.rows[0].subList(4, 7))
+        assertEquals(listOf("mail-sor-f41.google.com", "", ""), t.rows.map { it[2] })
+        assertEquals(listOf("Google LLC", "United States"), t.rows[0].subList(3, 5))
     }
 
     @Test
@@ -88,8 +88,8 @@ class test_FailureTable {
 
     @Test
     fun legend_only_for_shown_columns() {
-        val legend = TableFormatter.legend(Table(listOf("Source IP", "Count"), emptyList()), FailureTable.DESCRIPTIONS)
-        assertTrue(legend.contains("Source IP"))
+        val legend = TableFormatter.legend(Table(listOf("Source Host", "Count"), emptyList()), FailureTable.DESCRIPTIONS)
+        assertTrue(legend.contains("Source Host"))
         assertTrue(!legend.contains("Disposition"))
     }
 

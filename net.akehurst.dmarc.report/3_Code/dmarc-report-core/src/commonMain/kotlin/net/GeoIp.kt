@@ -19,11 +19,10 @@ package net.akehurst.dmarc.report.core.net
 import kotlinx.serialization.json.*
 
 /**
- * the approximate physical location of an IP address, from a geolocation database
+ * the country an IP address is in, from a geolocation database
  */
 data class GeoInfo(
     val country: String?,
-    val city: String?,
     /** the internet provider or organisation the geolocation service names */
     val isp: String?
 )
@@ -35,7 +34,7 @@ data class GeoInfo(
  */
 object GeoIp {
 
-    const val BATCH_URL = "http://ip-api.com/batch?fields=status,message,country,countryCode,city,isp,org,query"
+    const val BATCH_URL = "http://ip-api.com/batch?fields=status,message,country,isp,org,query"
     const val MAX_BATCH = 100
 
     fun requestBody(ips: List<String>): String = JsonArray(ips.map { JsonPrimitive(it) }).toString()
@@ -52,7 +51,6 @@ object GeoIp {
                 val ip = o.string("query") ?: return@mapNotNull null
                 ip to GeoInfo(
                     country = o.string("country")?.ifEmpty { null },
-                    city = o.string("city")?.ifEmpty { null },
                     isp = (o.string("org")?.ifEmpty { null } ?: o.string("isp"))?.ifEmpty { null }
                 )
             }.toMap()

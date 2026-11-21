@@ -2,7 +2,7 @@
 
 Reads a folder of DMARC aggregate reports, as received by email (`.zip`, `.tar.gz`, `.gz` or `.xml`),
 and prints a table of the records where DKIM or SPF failed: one row per record, with the information
-a sender needs to find the message (reporter, date, source IP with its host name, owner, country and location, count, header/envelope from,
+a sender needs to find the message (reporter, date, the sending server's host name, owner and country, count, header/envelope from,
 envelope to, DKIM and SPF results, disposition).
 
 ## Install
@@ -29,7 +29,7 @@ On Windows use `bin\dmarc-report.bat`.
 |---|---|
 | `--html <file>` | also write the table as an HTML page; open it in a browser, select the table and paste it into an email |
 | `--all` | include records that passed as well |
-| `--no-lookup` | do not look up the source IPs; otherwise each is looked up with reverse DNS, RDAP (owner, country) and ip-api.com (location, over plain http) |
+| `--no-lookup` | do not look up the source IPs; otherwise each is looked up with reverse DNS, RDAP (owner, country) and ip-api.com (country, over plain http) |
 | `--no-legend` | do not print the explanation of the columns after the table |
 | `--version` | print the version |
 | `--help` | print the help |
