@@ -161,6 +161,8 @@ object FailureTable {
                 )
                 columns.map { cells.getValue(it) }
             }
+            // records that look the same in the chosen columns are shown once
+            .distinct()
         return Table(columns, rows)
     }
 

@@ -60,8 +60,8 @@ class test_FailureTable {
     fun basic_columns() {
         val t = FailureTable.build(listOf(report))
         assertEquals(FailureTable.BASIC_COLUMNS, t.columns)
-        assertEquals(listOf("2025-11-20", "2025-11-20", "2025-11-20"), t.column("Date"))
-        assertEquals(listOf("google.com", "google.com", "google.com"), t.column("Reporter"))
+        assertEquals(listOf("2025-11-20"), t.column("Date"))
+        assertEquals(listOf("google.com"), t.column("Reporter"))
     }
 
     @Test
@@ -70,6 +70,13 @@ class test_FailureTable {
         assertEquals(FailureTable.COLUMNS, t.columns)
         assertEquals(listOf("example.org (s1) pass", "example.org (old) fail, example.org (s1) pass", "none"), t.column("DKIM checks"))
         assertEquals(listOf("gmail.com softfail", "example.org pass", "example.org fail"), t.column("SPF checks"))
+    }
+
+    @Test
+    fun identical_rows_merged() {
+        // the three failing records differ only in columns that are not basic
+        assertEquals(1, FailureTable.build(listOf(report)).rows.size)
+        assertEquals(3, FailureTable.build(listOf(report), detailed = true).rows.size)
     }
 
     @Test
@@ -83,7 +90,7 @@ class test_FailureTable {
 
     @Test
     fun text_is_aligned() {
-        val text = TableFormatter.text(FailureTable.build(listOf(report)))
+        val text = TableFormatter.text(FailureTable.build(listOf(report), detailed = true))
         val lines = text.lines().filter { it.isNotEmpty() }
         assertEquals(5, lines.size)
         val firstBar = lines[0].indexOf('|')

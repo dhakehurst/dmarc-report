@@ -41,6 +41,7 @@ Normative language
   - [REQ-2.4.8] Disposition: what the receiver did with the messages.
   - [REQ-2.4.9] The lookups of REQ-2.4.3, REQ-2.4.4 and Source Host (REQ-2.4a) SHALL be made unless asked not to (`--no-lookup`); a failed lookup SHALL leave its cells empty and SHALL NOT stop the application.
 - [REQ-2.4a] When asked to (`--details`), the table SHALL also have the technical columns: Source IP, Source Host (the host name given by reverse DNS of the source IP), Count (the number of messages), Envelope From, the evaluated DKIM and SPF results, each DKIM signature (domain, selector, result) and each SPF check (domain, result).
+- [REQ-2.4b] Rows that are identical in the shown columns SHALL be shown once.
 - [REQ-2.5] Columns that are empty in every row SHALL be left out, to keep the table narrow.
 - [REQ-2.6] When there are two or more rows, a column with the same value in every row SHALL be taken out of the table and printed once above it, as `<column>: <value> (all rows)`.
 - [REQ-2.7] Rows SHALL be sorted by report start date, then reporter, then source IP.
