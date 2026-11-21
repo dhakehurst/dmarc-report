@@ -1,5 +1,5 @@
 [versions]
-project = "0.1.0-SNAPSHOT"
+project = "1.0.0"
 
 kotlin = "2.4.0"
 buildconfig = "6.0.10"
